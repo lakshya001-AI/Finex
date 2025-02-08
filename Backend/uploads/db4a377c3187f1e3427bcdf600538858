@@ -1,0 +1,5 @@
+Gender,ApprovalStatus,PredictedApproval
+Male,1,1
+Female,0,1
+Male,1,1
+Female,1,0

@@ -1,35 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react'
+import Style from "./App.module.css"
+import {BrowserRouter, Routes, Route} from "react-router-dom"
+import Login from './Components/login'
+import { GoogleOAuthProvider } from '@react-oauth/google'; 
+import CreateAccount from './Components/createAccount';
+import MainPage from './Components/mainPage';
+import ProtectedRoute from './Components/protectedRoute';
+import BiasDetection from './Components/biasDetection';
+import LoanApproval from './Components/loanApproval';
+import FinancialAdvice from './Components/financialAdvice';
+import ProfilePage from './Components/profilePage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  return <>
+  <BrowserRouter>
+  <Routes>
+    <Route path='/' element={<GoogleOAuthProvider clientId='1060507592574-4rd8f30c3s68qe277a15ic82g736sgur.apps.googleusercontent.com'><Login/></GoogleOAuthProvider>}/>
+    <Route path='/createAccount' element={<GoogleOAuthProvider clientId='1060507592574-4rd8f30c3s68qe277a15ic82g736sgur.apps.googleusercontent.com'><CreateAccount/></GoogleOAuthProvider>}/>
+    <Route path='/mainPage' element={<ProtectedRoute><MainPage/></ProtectedRoute>}/>
+    <Route path='/biasDetection' element={<ProtectedRoute><BiasDetection/></ProtectedRoute>}/>
+    <Route path='/loanApproval' element={<ProtectedRoute><LoanApproval/></ProtectedRoute>}/>
+    <Route path='/financialAdvice' element={<ProtectedRoute><FinancialAdvice/></ProtectedRoute>}/>
+    <Route path='/profilePage' element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/>
+  </Routes>
+  </BrowserRouter>
+  </>
 }
 
 export default App
