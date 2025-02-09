@@ -116,7 +116,7 @@ function MainPage() {
 
           <div className={Style.section3MainPage}>
             <div className={Style.section3MainPageOverlay}>
-            <div className={Style.section3MainPageHeading}><div className={Style.borderDiv}></div>Your Data, Secured by <span class={Style.gradientText1}>Blockchain.</span></div>
+            <div className={Style.section3MainPageHeading}><div className={Style.borderDiv}></div>Your Data, Secured and  <span class={Style.gradientText1}>Encrypted.</span></div>
             <div className={Style.section3MainPagePara}>Your privacy and security are our top priorities. Using cutting-edge technologies, including blockchain, we store your financial data in a decentralized, tamper-proof system, ensuring only authorized access. This gives you peace of mind, knowing your information is protected and your financial journey remains secure.</div>
             <button className={Style.learnMoreBtn1}>Learn More</button>
             </div>

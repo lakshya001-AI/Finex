@@ -18,6 +18,7 @@ function BiasDetection() {
   const [file, setFile] = useState(null);
   const [results, setResults] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [mitigationAdvice, setMitigationAdvice] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -43,6 +44,10 @@ function BiasDetection() {
         }
       );
       setResults(response.data.results);
+      console.log(response.data.mitigation_advice
+      );
+      setMitigationAdvice(response.data.mitigation_advice);
+      
     } catch (error) {
       console.error("Error analyzing bias:", error.message);
       setErrorMessage(error.response?.data?.error || "Failed to analyze bias.");
@@ -177,13 +182,14 @@ function BiasDetection() {
 
           {/* Conclusion Section */}
           <div className={Style.conclusionSection}>
-            <h3 className={Style.conclusionHeading}>
-               Conclusion
-            </h3>
+
+          <h3 className={Style.chartHeading}>Conclusion</h3>
 
             <p className={Style.accuracyText}>
               The model demonstrates an overall accuracy of <strong>{results.overall_accuracy * 100}%</strong>.
             </p>
+
+          
 
             <ul className={Style.groupAnalysisList}>
               {Object.entries(results.by_group).map(([group, value]) => (
@@ -202,6 +208,11 @@ function BiasDetection() {
                 </p>
               ))}
             </ul>
+
+
+            <p className={Style.mitigationAdvicePara}>{mitigationAdvice}</p>
+
+
           </div>
         </div>
       )}
