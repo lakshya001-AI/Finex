@@ -3,7 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import Style from "../App.module.css";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight , faCircleArrowRight} from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faCircleArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { ToastContainer, toast , Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 function LoanApproval() {
   let userFirstName = localStorage.getItem("userFirstName") || "John";
@@ -70,10 +73,32 @@ function LoanApproval() {
           userEmailAddress: userEmailAddress,
         }
       );
-      alert("Prediction saved successfully!");
+      toast.success(`Prediction saved successfully!`, {
+                        position: "top-right",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                        className: Style.customToast,
+                    });
     } catch (error) {
       console.error("Error saving prediction:", error);
-      alert("An error occurred while saving the result.");
+      toast.success(`An error occurred while saving the result.`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+        className: Style.customToast,
+    });
     }
   };
 
@@ -81,6 +106,18 @@ function LoanApproval() {
     localStorage.removeItem("authToken");
     navigate("/");
   };
+
+  // Data for the BarChart
+  const chartData = [
+    {
+      name: 'Approval',
+      probability: (predictionResult?.probabilities?.Approved * 100).toFixed(2),
+    },
+    {
+      name: 'Rejection',
+      probability: (predictionResult?.probabilities?.Rejected * 100).toFixed(2),
+    }
+  ];
 
   return (
     <div className={Style.mainDiv}>
@@ -91,28 +128,14 @@ function LoanApproval() {
           </div>
 
           <div className={Style.linkNavBarMainPage}>
-            <Link className={Style.linkElementNavBar} to="/mainPage">
-              Home
-            </Link>
-            <Link className={Style.linkElementNavBar} to="/biasDetection">
-              Bias
-            </Link>
-            <Link className={Style.linkElementNavBar} to="/loanApproval">
-              Loans
-            </Link>
-            <Link className={Style.linkElementNavBar} to="/financialAdvice">
-              Advice
-            </Link>
+            <Link className={Style.linkElementNavBar} to="/mainPage">Home</Link>
+            <Link className={Style.linkElementNavBar} to="/biasDetection">Bias</Link>
+            <Link className={Style.linkElementNavBar} to="/loanApproval">Loans</Link>
+            <Link className={Style.linkElementNavBar} to="/financialAdvice">Advice</Link>
           </div>
 
           <div className={Style.ProfileBtnNavBarMainPage}>
-            <Link
-                           className={Style.profileBtn}
-                           to="/profilePage"
-                         >
-                           Profile
-                         </Link>
-
+            <Link className={Style.profileBtn} to="/profilePage">Profile</Link>
             {showUserInfo && (
               <div className={Style.userInfoDiv}>
                 <p className={Style.userInfoDivPara1}>
@@ -132,9 +155,7 @@ function LoanApproval() {
             <h1 className={Style.loanApprovalHeading}>
               Know Your Loan Approval <span className={Style.gradientText}>Instantly.</span>
             </h1>
-            <p className={Style.loanApprovalPara}>
-              Secure, Accurate, and Reliable
-            </p>
+            <p className={Style.loanApprovalPara}>Secure, Accurate, and Reliable</p>
 
             <div className={Style.loanApprovalStepsDiv}>
               <div className={Style.loanApprovalStep}>
@@ -167,10 +188,7 @@ function LoanApproval() {
             </div>
 
             <div className={Style.getPredictionBtnDiv}>
-              <button
-                onClick={() => setShowLoanFormPopup(true)}
-                className={Style.checkEligibilityBtn}
-              >
+              <button onClick={() => setShowLoanFormPopup(true)} className={Style.checkEligibilityBtn}>
                 Check Loan Eligibility
               </button>
             </div>
@@ -197,128 +215,95 @@ function LoanApproval() {
                 </div>
               ))}
               <div className={Style.btnDiv}>
-              <button type="submit" className={Style.predictBtn}>
-                Predict
-              </button>
-              <button
-                type="button"
-                className={Style.closeButton}
-                onClick={() => setShowLoanFormPopup(false)}
-              >
-                Close
-              </button>
+                <button type="submit" className={Style.predictBtn}>
+                  Predict
+                </button>
+                <button
+                  type="button"
+                  className={Style.closeButton}
+                  onClick={() => setShowLoanFormPopup(false)}
+                >
+                  Close
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* {showPredictionPopup && (
+      {showPredictionPopup && (
         <div className={Style.overlayPopup}>
           <div className={Style.popupContent}>
-            <h3>Prediction Result</h3>
-            {predictionResult && (
+            <h2>Prediction Summary</h2>
+            <hr />
+            {predictionResult ? (
               <div>
-                <p>
-                  <strong>Status:</strong> {predictionResult.result}
-                </p>
-                <p>
-                  <strong>Approved Probability:</strong> {predictionResult.probabilities.Approved}
-                </p>
-                <p>
-                  <strong>Rejected Probability:</strong> {predictionResult.probabilities.Rejected}
-                </p>
-                <p><strong>Reasons:</strong></p>
-                <ul>
-                  {predictionResult.reasons.map((reason, index) => (
-                    <li key={index}>{reason[0]}: {reason[1]}</li>
-                  ))}
-                </ul>
-                <p><strong>LIME Explanation:</strong></p>
-                <ul>
-                  {predictionResult.lime_explanation.map((explanation, index) => (
-                    <li key={index}>{explanation[0]}: {explanation[1].toFixed(4)}</li>
-                  ))}
-                </ul>
-                <button onClick={savePredictionResult} className={Style.saveButton}>
-                  Save Prediction
-                </button>
-                <button
-                  type="button"
-                  className={Style.closeButton}
-                  onClick={() => setShowPredictionPopup(false)}
-                >
-                  Close
-                </button>
+                <section className={Style.section}>
+                  <p className={Style.predictionPara}><FontAwesomeIcon icon={faCircleArrowRight}/> Status</p>
+                  <ResponsiveContainer width="90%" height={280}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis domain={[0, 100]}/>
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="probability" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+                  <ul>
+                    <li><strong>Application Status:</strong> {predictionResult.result}</li>
+                    <li><strong>Approval Probability:</strong> {(predictionResult.probabilities.Approved * 100).toFixed(2)}%</li>
+                    <li><strong>Rejection Probability:</strong> {(predictionResult.probabilities.Rejected * 100).toFixed(2)}%</li>
+                  </ul>
+                </section>
+
+                <hr />
+
+                <section className={Style.section}>
+                  <p className={Style.predictionPara}><FontAwesomeIcon icon={faCircleArrowRight}/> Reason for Decision</p>
+                  <ul className={Style.reasonsList}>
+                    {predictionResult.reasons.map((reason, index) => (
+                      <li key={index}><strong>{reason[0]}:</strong> {reason[1]}</li>
+                    ))}
+                  </ul>
+                </section>
+
+                <hr />
+
+                <section className={Style.section}>
+                  <p className={Style.predictionPara}><FontAwesomeIcon icon={faCircleArrowRight}/> LIME Analysis</p>
+                  <ul className={Style.explanationList}>
+                    {predictionResult.lime_explanation.map((explanation, index) => (
+                      <li key={index}><strong>{explanation[0]}:</strong> {explanation[1].toFixed(4)}</li>
+                    ))}
+                  </ul>
+                </section>
+
+                <div className={Style.btnDiv}>
+                  <button onClick={savePredictionResult} className={Style.predictBtn}>
+                    Save Prediction
+                  </button>
+                  <button
+                    type="button"
+                    className={Style.closeButton}
+                    onClick={() => setShowPredictionPopup(false)}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
+            ) : (
+              <p>No prediction result available.</p>
             )}
           </div>
         </div>
-      )} */}
-
-{showPredictionPopup && (
-  <div className={Style.overlayPopup}>
-    <div className={Style.popupContent}>
-      <h2>Prediction Summary</h2>
-      <hr />
-      {predictionResult ? (
-        <div>
-          <section className={Style.section}>
-            <p className={Style.predictionPara}><FontAwesomeIcon icon={faCircleArrowRight}/> Status</p>
-            <ul>
-              <li><strong>Application Status:</strong> {predictionResult.result}</li>
-              <li><strong>Approval Probability:</strong> {(predictionResult.probabilities.Approved * 100).toFixed(2)}%</li>
-              <li><strong>Rejection Probability:</strong> {(predictionResult.probabilities.Rejected * 100).toFixed(2)}%</li>
-            </ul>
-          </section>
-
-          <hr />
-
-          <section className={Style.section}>
-            <p className={Style.predictionPara}><FontAwesomeIcon icon={faCircleArrowRight}/> Reason for Decision</p>
-            <ul className={Style.reasonsList}>
-              {predictionResult.reasons.map((reason, index) => (
-                <li key={index}><strong>{reason[0]}:</strong> {reason[1]}</li>
-              ))}
-            </ul>
-          </section>
-
-          
-          <hr />
-
-          <section className={Style.section}>
-            <p className={Style.predictionPara}><FontAwesomeIcon icon={faCircleArrowRight}/> LIME Analysis</p>
-            <ul className={Style.explanationList}>
-              {predictionResult.lime_explanation.map((explanation, index) => (
-                <li key={index}><strong>{explanation[0]}:</strong> {explanation[1].toFixed(4)}</li>
-              ))}
-            </ul>
-          </section>
-
-          <div className={Style.btnDiv}>
-            <button onClick={savePredictionResult} className={Style.predictBtn}>
-              Save Prediction
-            </button>
-            <button
-              type="button"
-              className={Style.closeButton}
-              onClick={() => setShowPredictionPopup(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      ) : (
-        <p>No prediction result available.</p>
       )}
-    </div>
-  </div>
-)}
-
+      <ToastContainer/>
     </div>
   );
 }
 
 export default LoanApproval;
+
 
 

@@ -182,13 +182,39 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Style from "../App.module.css";
+import MarkdownIt from "markdown-it";
+import { PuffLoader, RingLoader } from "react-spinners";
+const md = new MarkdownIt();
 
 function FinancialAdvice() {
   const navigate = useNavigate();
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showThink, setShowThink] = useState(true); // New state for toggle
+  const [streamLoading, setStreamLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("mandatory");
+
+  const tabStyle = {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "20px",
+  };
+
+  const tabButtonStyle = {
+    padding: "10px 20px",
+    backgroundColor: "#2c2c2c",
+    border: "1px solid #444",
+    color: "#fff",
+    borderRadius: "8px",
+    cursor: "pointer",
+    transition: "background-color 0.3s",
+  };
+
+  const activeTabStyle = {
+    ...tabButtonStyle,
+    backgroundColor: "#14a6ff",
+    border: "1px solid #14a6ff",
+  };
 
   function logoutUser() {
     localStorage.removeItem("authToken");
@@ -207,6 +233,7 @@ function FinancialAdvice() {
 
   const handleSubmit = async () => {
     setLoading(true);
+    setStreamLoading(false);
     setDisplayText("");
 
     try {
@@ -214,25 +241,22 @@ function FinancialAdvice() {
         "http://localhost:5000/api/financial-advice",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            salary,
-            expenses,
-            savings,
-            adviceType,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ salary, expenses, savings, adviceType }),
         }
       );
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
+      // Once we start receiving data, switch from Puff to Ring loader
+      setLoading(false);
+      setStreamLoading(true);
+
       while (true) {
         const { value, done } = await reader.read();
         if (done) {
-          setLoading(false);
+          setStreamLoading(false);
           break;
         }
 
@@ -243,7 +267,7 @@ function FinancialAdvice() {
           if (line.startsWith("data: ")) {
             const data = line.slice(6);
             if (data === "[DONE]") {
-              setLoading(false);
+              setStreamLoading(false);
               return;
             }
             try {
@@ -258,39 +282,14 @@ function FinancialAdvice() {
     } catch (error) {
       console.error("Error fetching advice:", error);
       setLoading(false);
+      setStreamLoading(false);
     }
-  };
-
-  // Function to process and format the displayed text
-  const formatDisplayText = (text) => {
-    const thinkContent =
-      text.match(/\*\*Think:\*\*(.*?)(\*\*Final Answer:\*\*|$)/s)?.[1] || "";
-    const answerContent = text.split(/\*\*Final Answer:\*\*/s)[1] || "";
-
-    return (
-      <>
-        {showThink && thinkContent && (
-          <span style={{ color: "#666", fontStyle: "italic" }}>
-            {thinkContent}
-          </span>
-        )}
-        {answerContent && (
-          <span style={{ color: "#333" }}>{answerContent}</span>
-        )}
-      </>
-    );
-  };
-
-  const processStreamData = (text) => {
-    const thinkMatch = text.match(/<think>([\s\S]*?)<\/think>/);
-    const thinkContent = thinkMatch ? thinkMatch[1].trim() : "";
-    const mainContent = text.split("</think>")[1]?.trim() || text;
-    return { thinkContent, mainContent };
   };
 
   return (
     <div className={Style.mainDiv}>
       <div className={Style.mainPageMainDiv}>
+        {/* Navigation bar code remains the same */}
         <div className={Style.navBarMainPage}>
           <div className={Style.logoNavBarMainPage}>
             <h1>FINEX</h1>
@@ -382,39 +381,107 @@ function FinancialAdvice() {
                 <option value="tax">Tax Planning</option>
               </select>
 
-              <button onClick={handleSubmit} disabled={loading}>
-                {loading ? "Fetching Advice..." : "Get Advice"}
+              <button
+                onClick={handleSubmit}
+                disabled={loading || streamLoading}
+              >
+                {loading || streamLoading ? "Fetching Advice..." : "Get Advice"}
               </button>
             </div>
           </div>
 
-          <div className={Style.financialAdviceMainDiv2}>
-            {displayText ? (
-              <div style={{ padding: "30px", backgroundColor: "#1f1f1f" }}>
-                <pre
+          <div
+            style={{
+              width: "100%",
+              backgroundColor: "#1f1f1f",
+              height: "52vh",
+              borderRadius: "40px",
+              marginTop: "30px",
+              overflowY: "auto",
+              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              position: "relative",
+              scrollBehavior: "smooth",
+            }}
+          >
+            {loading ? (
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "20px",
+                }}
+              >
+                <PuffLoader color="#14a6ff" size={200} />
+              </div>
+            ) : displayText ? (
+              <div
+                style={{
+                  padding: "40px",
+                  height: "100%",
+                  position: "relative",
+                }}
+              >
+                <div
                   style={{
                     whiteSpace: "pre-wrap",
                     fontSize: "16px",
                     fontFamily: "system-ui, -apple-system, sans-serif",
-                    lineHeight: "1.6",
+                    lineHeight: "1.8",
                     color: "#fff",
                     margin: 0,
+                    paddingBottom: "50px", // Space for the loader at bottom
                   }}
-                >
-                  {displayText}
-                </pre>
+                  dangerouslySetInnerHTML={{ __html: md.render(displayText) }}
+                />
+                {streamLoading && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      bottom: "40px",
+                      right: "40px",
+                      background: "rgba(31, 31, 31, 0.8)",
+                      padding: "10px",
+                      borderRadius: "50%",
+                      backdropFilter: "blur(5px)",
+                      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
+                      zIndex: 10,
+                    }}
+                  >
+                    <RingLoader color="#2e84ff" size={27} />
+                  </div>
+                )}
               </div>
             ) : (
               <div
                 style={{
-                  padding: "30px",
-                  fontSize: "16px",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "20px",
                   color: "gray",
+                  fontSize: "16px",
                   textAlign: "center",
+                  fontFamily: "system-ui, -apple-system, sans-serif",
                 }}
               >
-                No results found. Please provide the necessary details for
-                advice.
+                <div
+                  style={{
+                    maxWidth: "400px",
+                    padding: "20px",
+                    background: "rgba(255, 255, 255, 0.05)",
+                    borderRadius: "20px",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                  }}
+                >
+                  No results found. Please provide the necessary details for
+                  advice.
+                </div>
               </div>
             )}
           </div>

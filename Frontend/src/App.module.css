@@ -670,6 +670,7 @@ html, body{
     border-radius: 15px;
     padding: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
 }
 
 
@@ -721,7 +722,17 @@ html, body{
     font-size: 17px;
     border-radius: 10px;
 }
-
+.deploymentLinkInput{
+  width: 70%;
+    background-color: #1a1a1a;
+    color: white;
+    padding: 20px;
+    border: 1px solid #4776E6;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 17px;
+    border-radius: 10px;
+}
 .biasPredictionMainDiv2 button {
     background: linear-gradient(to right, #4776E6 0%, #8E54E9 51%, #4776E6 100%);
     color: white;
@@ -759,16 +770,18 @@ html, body{
 .resultsContainer {
     padding: 10px;
     border-radius: 15px;
+    margin-top: 50px;
   }
   
   .resultsContainer h2, .resultsContainer h3 {
     color: #8E54E9;
     text-align: center;
     margin-bottom: 20px;
+    font-size: 29px;
   }
   
   .resultsContainer p, .resultsContainer ul {
-    font-size: 15px;
+    font-size: 19px;
     color: #ddd;
   }
   
@@ -783,21 +796,29 @@ html, body{
   }
   
   .resultsContainer .conclusion h3 {
-    margin-top: 30px;
+    margin-top: 10px;
     text-align: left;
     margin-left: 10px;
     font-size: 20px;
     color: white;
   }
+
+  .resultsContainer .conclusion h4 {
+    margin-top: 10px;
+    text-align: left;
+    margin-left: 10px;
+    font-size: 17px;
+    color: white;
+  }
   
   .resultsContainer .conclusion p {
-    font-size: 15px;
+    font-size: 20px;
     color: #eee;
   }
   
   .resultsContainer .conclusion ul {
     margin-top: 20px;
-    color: #FF6347;
+    font-size: 15px;
   }
 
   .overAllModelAccuracyPara{
@@ -941,12 +962,14 @@ html, body{
     padding: 20px;
     width: 90%;
     max-width: 500px;
+    height: 80%;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     animation: slideIn 0.3s ease-out;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow-y: auto;
   }
   
   .popupContent h2,
@@ -1043,7 +1066,7 @@ html, body{
 
   .predictionPara{
     font-size: 18px;
-    margin: 10px;
+    margin:15px;
     font-style: italic
   }
 
@@ -1193,4 +1216,24 @@ html, body{
 
   .adviceCard ul{
     margin-left: 20px;
+  }
+
+  .conclusionSection{
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+
+  .groupAnalysisList{
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .groupAnalysisItem{
+    list-style: none;
   }

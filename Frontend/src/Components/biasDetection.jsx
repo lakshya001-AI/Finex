@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import Style from "../App.module.css";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleChevronRight } from "@fortawesome/free-solid-svg-icons";
 import {
-  faUser,
-  faSignOutAlt,
-  faInfoCircle,
-  faArrowUpRightFromSquare,
-  faCircleChevronRight,
-} from "@fortawesome/free-solid-svg-icons";
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 function BiasDetection() {
-  const navigate = useNavigate();
-  const [showUserInfo, setShowUserInfo] = useState(false);
   const [file, setFile] = useState(null);
   const [results, setResults] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -22,11 +23,6 @@ function BiasDetection() {
     setFile(e.target.files[0]);
     setErrorMessage(null); // Clear previous error messages
   };
-
-  function logoutUser() {
-    localStorage.removeItem("authToken");
-    navigate("/");
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,21 +49,14 @@ function BiasDetection() {
     }
   };
 
-  const [loading, setLoading] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-
-  const handleAnalyzeClick = () => {
-    setLoading(true); // Show loading message after clicking Analyze
-    setShowResults(false); // Hide previous results
-    setTimeout(() => {
-      setLoading(false); // Hide loading message after 5 seconds
-      setShowResults(true); // Show results
-    }, 5000); // Simulate 5 seconds loading time
-  };
+  const chartData = results
+    ? [{ name: "Overall Accuracy", accuracy: results.overall_accuracy * 100 }]
+    : [];
 
   return (
     <div className={Style.mainDiv}>
       <div className={Style.mainPageMainDiv}>
+        {/* Navigation bar */}
         <div className={Style.navBarMainPage}>
           <div className={Style.logoNavBarMainPage}>
             <h1>FINEX</h1>
@@ -95,41 +84,12 @@ function BiasDetection() {
                          >
                            Profile
                          </Link>
-
-            {showUserInfo && (
-              <div className={Style.userInfoDiv}>
-                <p
-                  className={Style.userInfoDivPara1}
-                >{`${userFirstName} ${userLastName}`}</p>
-                <p className={Style.userInfoDivPara2}>{userEmailAddress}</p>
-                <button className={Style.logoutBtn} onClick={logoutUser}>
-                  Logout
-                </button>
-              </div>
-            )}
           </div>
         </div>
-        {/* 
-        <div style={{ color: "white" }}>
-          <h1>Bias Detection</h1>
-          <form onSubmit={handleSubmit}>
-            <input type="file" onChange={handleFileChange} />
-            <button type="submit">Analyze</button>
-          </form>
-          {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-          {results && (
-            <div>
-              <h2>Results</h2>
-              <p>Overall Accuracy: {results.overall_accuracy}</p>
-              <h3>By Group</h3>
-              <pre>{JSON.stringify(results.by_group, null, 2)}</pre>
-            </div>
-          )}
-        </div> */}
 
+        {/* Bias Detection */}
         <div className={Style.biasPredictionMainDiv}>
-          {/* Gradient Information Div */}
-          <div className={Style.biasPredictionMainDiv1}>
+        <div className={Style.biasPredictionMainDiv1}>
             <h1 className={Style.biasPredictionMainDiv1Heading}>
               The Future of Fair AI is Here.
             </h1>
@@ -162,95 +122,90 @@ function BiasDetection() {
             </div>
           </div>
 
-          {/* Input and Results Div */}
-          {/* <div className={Style.biasPredictionMainDiv2}>
-            <form onSubmit={handleSubmit}>
-              <label htmlFor="">Please upload the CSV File</label>
-              <input type="file" onChange={handleFileChange} />
-              <button type="submit">Analyze</button>
-            </form>
-            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-            {results && (
-              <div>
-                <h2>Results</h2>
-                <p>Overall Accuracy: {results.overall_accuracy}</p>
-                <h3>By Group</h3>
-                <ul>
-                  {Object.entries(results.by_group).map(([group, value]) => (
-                    <li key={group}>
-                      <strong>{group}:</strong> {value}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div> */}
 
           <div className={Style.biasPredictionMainDiv2}>
-            <form onSubmit={handleSubmit}>
-              <label htmlFor="file-upload">Please provide the Deployed Model Link</label>
-              <input type="text" id="file-upload" className={Style.modelLinkInput} placeholder="Deployed Model Link"/>
-              <label htmlFor="file-upload">Please upload the CSV File</label>
-              <input type="file" id="file-upload" onChange={handleFileChange} placeholder="Please"/>
-              <button type="submit">Analyze</button>
-            </form>
-            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-            {results && (
-              <div className={Style.resultsContainer}>
-                <p className={Style.overAllModelAccuracyPara}>
-                  <strong>
-                    <FontAwesomeIcon icon={faCircleChevronRight} /> Overall
-                    Model Accuracy:
-                  </strong>{" "}
+      {/* Form Section */}
+      <div className={Style.formSection}>
+        <form onSubmit={handleSubmit} className={Style.fileUploadForm}>
+          <label htmlFor="file-upload" className={Style.fileUploadLabel}>
+            Upload the model deployment link
+          </label>
+          <input
+            type="text"
+            className={Style.deploymentLinkInput}
+            placeholder="Deployment Link"
+          />
+          <label htmlFor="file-upload" className={Style.fileUploadLabel}>
+            Upload the CSV File
+          </label>
+          <input
+            type="file"
+            id="file-upload"
+            onChange={handleFileChange}
+            className={Style.fileUploadInput}
+          />
+
+          <button type="submit" className={Style.analyzeButton}>
+            Analyze
+          </button>
+        </form>
+        {errorMessage && (
+          <p className={Style.errorMessage}>
+            {errorMessage}
+          </p>
+        )}
+      </div>
+
+      {/* Results Section */}
+      {results && (
+        <div className={Style.resultsContainer}>
+          {/* Chart Section */}
+          <div className={Style.chartSection}>
+            <h3 className={Style.chartHeading}>Overall Accuracy</h3>
+            <div style={{ width: "100%", height: 300 }}>
+              <ResponsiveContainer>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip />
+                  <Bar dataKey="accuracy" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Conclusion Section */}
+          <div className={Style.conclusionSection}>
+            <h3 className={Style.conclusionHeading}>
+               Conclusion
+            </h3>
+
+            <p className={Style.accuracyText}>
+              The model demonstrates an overall accuracy of <strong>{results.overall_accuracy * 100}%</strong>.
+            </p>
+
+            <ul className={Style.groupAnalysisList}>
+              {Object.entries(results.by_group).map(([group, value]) => (
+                <p key={group} className={Style.groupAnalysisItem}>
+                  <strong>{group}:</strong>{" "}
                   <span
                     style={{
-                      color:
-                        results.overall_accuracy >= 0.7 ? "green" : "orange",
+                      color: value === 1 ? "green" : "red",
+                      fontWeight: "bold",
                     }}
                   >
-                    {results.overall_accuracy * 100}%
+                    {value === 1
+                      ? "Fair and accurate predictions."
+                      : "Bias detected; less accurate predictions."}
                   </span>
                 </p>
-                <ul>
-                  {Object.entries(results.by_group).map(([group, value]) => (
-                    <li key={group}>
-                      <strong>{group}:</strong>{" "}
-                      <span style={{ color: value === 1 ? "green" : "red" }}>
-                        {value === 1
-                          ? "Fair and accurate predictions."
-                          : "Bias detected; less accurate predictions."}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <div className={Style.conclusion}>
-                  <h3>
-                    {" "}
-                    <FontAwesomeIcon icon={faCircleChevronRight} /> Conclusion
-                  </h3>
-                  <p>
-                    The model demonstrates an overall accuracy of{" "}
-                    <strong>{results.overall_accuracy * 100}%</strong>. Based on
-                    the group-wise analysis:
-                  </p>
-                  <ul>
-                    <li>
-                      <strong>Male:</strong> The model shows fairness and
-                      accurate predictions.
-                    </li>
-                    <li>
-                      <strong>Female:</strong> The model exhibits potential
-                      bias, leading to less accurate predictions.
-                    </li>
-                  </ul>
-                  <p style={{ color: "#FF6347" }}>
-                    Note: Improvements are recommended to ensure gender fairness
-                    in predictions.
-                  </p>
-                </div>
-              </div>
-            )}
+              ))}
+            </ul>
           </div>
+        </div>
+      )}
+    </div>
         </div>
       </div>
     </div>
@@ -258,3 +213,5 @@ function BiasDetection() {
 }
 
 export default BiasDetection;
+
+
