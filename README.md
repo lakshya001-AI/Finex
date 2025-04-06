@@ -1,6 +1,5 @@
-# TEM-E-THON - FINEX
+# FINEX
 
-![TEM-E-THON](https://media.hackerearth.com/media/hackathon/tem-e-thon/images/698b9524a7-banner_w_prize_1.png)
 
 Finex is an innovative fintech platform that simplifies, secures, and enhances the way you manage your finances. With cutting-edge technology and AI-powered tools, Finex empowers users to make smarter, fairer, and more informed financial decisions.
 
